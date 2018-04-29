@@ -14,14 +14,24 @@ public class ContinuousDemo : MonoBehaviour {
 	public AudioSource Audio;
 	private float RestartTime;
 
-	// Disable Screen Rotation on that screen
 	void Awake()
 	{
-		Screen.autorotateToPortrait = false;
-		Screen.autorotateToPortraitUpsideDown = false;
+		Screen.autorotateToPortrait = true;
+		Screen.autorotateToPortraitUpsideDown = true;
+
+		// Enable vsync for the samples (avoid running mobile device at 300fps)
+		QualitySettings.vSyncCount = 1;
 	}
 
 	void Start () {
+		// When the app start, ask for the authorization to use the webcam
+		yield return Application.RequestUserAuthorization(UserAuthorization.WebCam);
+
+		if (!Application.HasUserAuthorization(UserAuthorization.WebCam))
+		{
+			throw new Exception("This Webcam library can't work without the webcam authorization");
+		}
+
 		// Create a basic scanner
 		BarcodeScanner = new Scanner();
 		BarcodeScanner.Camera.Play();
