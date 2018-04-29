@@ -23,7 +23,8 @@ public class ContinuousDemo : MonoBehaviour {
 		QualitySettings.vSyncCount = 1;
 	}
 
-	void Start () {
+	IEnumerator Start()
+	{
 		// When the app start, ask for the authorization to use the webcam
 		yield return Application.RequestUserAuthorization(UserAuthorization.WebCam);
 
@@ -31,25 +32,27 @@ public class ContinuousDemo : MonoBehaviour {
 		{
 			throw new Exception("This Webcam library can't work without the webcam authorization");
 		}
+		else
+		{
+			// Create a basic scanner
+			BarcodeScanner = new Scanner();
+			BarcodeScanner.Camera.Play();
 
-		// Create a basic scanner
-		BarcodeScanner = new Scanner();
-		BarcodeScanner.Camera.Play();
+			// Display the camera texture through a RawImage
+			BarcodeScanner.OnReady += (sender, arg) => {
+				// Set Orientation & Texture
+				Image.transform.localEulerAngles = BarcodeScanner.Camera.GetEulerAngles();
+				Image.transform.localScale = BarcodeScanner.Camera.GetScale();
+				Image.texture = BarcodeScanner.Camera.Texture;
 
-		// Display the camera texture through a RawImage
-		BarcodeScanner.OnReady += (sender, arg) => {
-			// Set Orientation & Texture
-			Image.transform.localEulerAngles = BarcodeScanner.Camera.GetEulerAngles();
-			Image.transform.localScale = BarcodeScanner.Camera.GetScale();
-			Image.texture = BarcodeScanner.Camera.Texture;
+				// Keep Image Aspect Ratio
+				var rect = Image.GetComponent<RectTransform>();
+				var newHeight = rect.sizeDelta.x * BarcodeScanner.Camera.Height / BarcodeScanner.Camera.Width;
+				rect.sizeDelta = new Vector2(rect.sizeDelta.x, newHeight);
 
-			// Keep Image Aspect Ratio
-			var rect = Image.GetComponent<RectTransform>();
-			var newHeight = rect.sizeDelta.x * BarcodeScanner.Camera.Height / BarcodeScanner.Camera.Width;
-			rect.sizeDelta = new Vector2(rect.sizeDelta.x, newHeight);
-
-			RestartTime = Time.realtimeSinceStartup;
-		};
+				RestartTime = Time.realtimeSinceStartup;
+			};
+		}
 	}
 
 	/// <summary>
